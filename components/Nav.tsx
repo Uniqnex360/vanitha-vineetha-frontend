@@ -5,7 +5,6 @@ import { useEffect, useState } from "react";
 import { fetchFastAPI, getToken, clearToken } from "@/lib/fastapi";
 
 const CHAIN_NAME = process.env.NEXT_PUBLIC_CHAIN_NAME || "PVR Cinemas";
-const CHAIN_LOGO_TEXT = process.env.NEXT_PUBLIC_CHAIN_LOGO_TEXT || "PVR";
 const CHAIN_THEME_COLOR =
   process.env.NEXT_PUBLIC_CHAIN_THEME_COLOR || "#e50914";
 
@@ -47,8 +46,7 @@ export default function Nav() {
         href="/"
         style={{ fontWeight: "bold", fontSize: "18px" }}
       >
-        {CHAIN_LOGO_TEXT}{" "}
-        <span style={{ fontWeight: 400, opacity: 0.9 }}>{CHAIN_NAME}</span>
+        {CHAIN_NAME}
       </Link>
 
       <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>

@@ -128,14 +128,14 @@ export default function Home() {
       ) : (
         <div className="grid" style={{ marginTop: "24px" }}>
           {movies.map((m) => (
-            <article className="card" key={m.id}>
+            <article className="card" key={m.id} style={{ display: "flex", flexDirection: "column" }}>
               <img
                 className="poster"
                 src={m.posterUrl}
                 alt={m.title}
                 style={{ height: "280px", objectFit: "cover" }}
               />
-              <div className="pad">
+              <div className="pad" style={{ display: "flex", flexDirection: "column", flexGrow: 1 }}>
                 <h2>{m.title}</h2>
                 <p style={{ margin: "4px 0", color: "#666", fontSize: "14px" }}>
                   {m.language} · {m.certificate} · {m.durationMin} mins
@@ -144,7 +144,7 @@ export default function Home() {
                 <Link
                   className="btn"
                   href={`/movie?id=${m.id}`}
-                  style={{ display: "block", textAlign: "center", marginTop: "12px" }}
+                  style={{ display: "block", textAlign: "center", marginTop: "auto" }}
                 >
                   Book Tickets
                 </Link>
