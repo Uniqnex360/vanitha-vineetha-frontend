@@ -2,31 +2,51 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { fetchFastAPI, getToken, BackendUnreachableError } from "@/lib/fastapi";
+
+interface Seat {
+  seat_id: string;
+  code: string;
+  price_cents: number;
+}
+
+interface Booking {
+  id: string;
+  ref_code: string;
+  status: string;
+  movie_title: string;
+  cinema_name: string;
+  screen_name: string;
+  starts_at: string;
+  seats: Seat[];
+}
 
 export default function MyBookings() {
-  const [bookings, setBookings] = useState<any[]>([]);
+  const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
   const [isLoggedOut, setIsLoggedOut] = useState(false);
+  const [unreachable, setUnreachable] = useState(false);
   const [error, setError] = useState("");
-  const router = useRouter();
 
   const loadBookings = async () => {
+    if (!getToken()) {
+      setIsLoggedOut(true);
+      setLoading(false);
+      return;
+    }
+
     try {
       setLoading(true);
-      const res = await fetch("/api/bookings");
-      if (res.status === 401) {
-        setIsLoggedOut(true);
-        return;
-      }
-      const data = await res.json();
-      if (!res.ok) {
-        setError(data.error || "Failed to load bookings");
-        return;
-      }
+      setUnreachable(false);
+      setError("");
+      const data = await fetchFastAPI<Booking[]>("/bookings/me");
       setBookings(Array.isArray(data) ? data : []);
-    } catch (err: any) {
-      setError(err.message || "Failed to load bookings");
+    } catch (err: unknown) {
+      if (err instanceof BackendUnreachableError) {
+        setUnreachable(true);
+      } else if (err instanceof Error) {
+        setError(err.message || "Failed to load bookings");
+      }
     } finally {
       setLoading(false);
     }
@@ -39,18 +59,11 @@ export default function MyBookings() {
   const handleCancel = async (bookingId: string) => {
     if (!confirm("Are you sure you want to cancel this booking?")) return;
     try {
-      const res = await fetch(`/api/bookings/${bookingId}/cancel`, {
-        method: "POST",
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        alert(data.error || "Failed to cancel");
-        return;
-      }
+      await fetchFastAPI(`/bookings/${bookingId}/cancel`, { method: "POST" });
       alert("Booking cancelled successfully. Seats are now available.");
       loadBookings();
-    } catch (err: any) {
-      alert(err.message || "Cancellation failed");
+    } catch (err: unknown) {
+      if (err instanceof Error) alert(err.message || "Cancellation failed");
     }
   };
 
@@ -58,6 +71,18 @@ export default function MyBookings() {
     return (
       <main className="container" style={{ padding: "40px", textAlign: "center" }}>
         <p style={{ color: "#666" }}>Loading your bookings...</p>
+      </main>
+    );
+  }
+
+  if (unreachable) {
+    return (
+      <main className="container" style={{ padding: "40px", textAlign: "center" }}>
+        <h2>This cinema&apos;s system may be waking up</h2>
+        <p className="muted">Please try again in a moment.</p>
+        <button className="btn" onClick={loadBookings} style={{ marginTop: "16px" }}>
+          Retry
+        </button>
       </main>
     );
   }
@@ -123,7 +148,7 @@ export default function MyBookings() {
                     {b.cinema_name} • {b.screen_name}
                   </p>
                   <p style={{ margin: "4px 0 0 0", fontSize: "14px" }}>
-                    Seats: <b>{b.seats.map((s: any) => s.code).join(", ")}</b> | Ref:{" "}
+                    Seats: <b>{b.seats.map((s) => s.code).join(", ")}</b> | Ref:{" "}
                     <code>{b.ref_code}</code>
                   </p>
                   <p style={{ margin: "4px 0 0 0", fontSize: "12px", color: "#888" }}>
@@ -134,7 +159,7 @@ export default function MyBookings() {
                 </div>
 
                 <div style={{ display: "flex", gap: "8px" }}>
-                  <Link className="btn" href={`/confirmation/${b.ref_code}`}>
+                  <Link className="btn" href={`/confirmation?ref=${encodeURIComponent(b.ref_code)}`}>
                     View Ticket
                   </Link>
                   {!isCancelled && (

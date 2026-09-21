@@ -2,10 +2,13 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { fetchFastAPI, setToken } from "@/lib/fastapi";
 
 export default function Login() {
   const [isRegister, setIsRegister] = useState(false);
-  const [email, setEmail] = useState("demo@pvr.local");
+  const [email, setEmail] = useState(
+    process.env.NEXT_PUBLIC_CHAIN_DEMO_EMAIL || "demo@pvr.local"
+  );
   const [password, setPassword] = useState("demo1234");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -16,24 +19,25 @@ export default function Login() {
     setError("");
 
     try {
-      const endpoint = isRegister ? "/api/auth/register" : "/api/auth/login";
-      const res = await fetch(endpoint, {
+      const endpoint = isRegister ? "/auth/register" : "/auth/login";
+      const data = await fetchFastAPI<{
+        access_token?: string;
+        token?: string;
+      }>(endpoint, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
       });
 
-      const data = await res.json();
-      if (!res.ok) {
-        setError(data.error || "Authentication failed");
+      const token = data.access_token || data.token;
+      if (!token) {
+        setError("No token returned from server");
         setLoading(false);
         return;
       }
-
-      // Hard redirect to root so the navbar and session reload instantly
+      setToken(token);
       window.location.href = "/";
-    } catch (err: any) {
-      setError(err.message || "Something went wrong");
+    } catch (err: unknown) {
+      if (err instanceof Error) setError(err.message);
       setLoading(false);
     }
   };
@@ -44,7 +48,10 @@ export default function Login() {
         <h1 style={{ marginTop: 0 }}>{isRegister ? "Register" : "Login"}</h1>
         {error && <p className="error">{error}</p>}
 
-        <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+        <form
+          onSubmit={handleSubmit}
+          style={{ display: "flex", flexDirection: "column", gap: "12px" }}
+        >
           <div>
             <label style={{ display: "block", fontSize: "12px", color: "#666", marginBottom: "4px" }}>
               Email
