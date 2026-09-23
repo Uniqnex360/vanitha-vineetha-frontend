@@ -55,7 +55,7 @@ export async function fetchFastAPI<T = unknown>(
       let detail = `Backend error: ${response.status}`;
       try {
         const body = await response.json();
-        detail = body.detail || body.error || detail;
+        { const r = body.detail ?? body.error; detail = typeof r === "string" ? r : (r && typeof r === "object" ? (r.code ?? JSON.stringify(r)) : detail); }
       } catch {
         // not json
       }
