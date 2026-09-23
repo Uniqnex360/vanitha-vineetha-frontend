@@ -87,7 +87,7 @@ function MovieContent() {
   }
 
   const movieShowtimes = allShowtimes.filter(
-    (s) => s.movie_title === selectedShow.movie_title
+    (s) => s.movie_title === selectedShow.movie_title && s.cinema_name === selectedShow.cinema_name
   );
 
   const posterUrl =
