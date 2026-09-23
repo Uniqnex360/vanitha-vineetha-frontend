@@ -87,7 +87,7 @@ function MovieContent() {
   }
 
   const movieShowtimes = allShowtimes.filter(
-    (s) => s.movie_title === selectedShow.movie_title && s.cinema_name === selectedShow.cinema_name
+    (s) => s.movie_title === selectedShow.movie_title
   );
 
   const posterUrl =
@@ -112,7 +112,7 @@ function MovieContent() {
           <p>
             {selectedShow.language} · {selectedShow.certificate} · {selectedShow.duration_min} mins
           </p>
-          <p style={{ color: "#666" }}>Playing at {selectedShow.cinema_name}</p>
+          <p style={{ color: "#666" }}>Available showtimes</p>
 
           <h2 style={{ marginTop: "24px", borderTop: "1px solid #eee", paddingTop: "16px" }}>
             Select a showtime
@@ -128,7 +128,7 @@ function MovieContent() {
                   })}
                 </b>
                 <br />
-                <span className="muted">{s.screen_name}</span>
+                <span className="muted">{s.cinema_name} · {s.screen_name}</span>
               </Link>
             ))}
           </div>
