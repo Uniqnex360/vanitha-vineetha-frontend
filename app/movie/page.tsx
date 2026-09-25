@@ -121,7 +121,9 @@ function MovieContent() {
             {movieShowtimes.map((s) => (
               <Link className="show" href={`/booking?id=${s.id}`} key={s.id}>
                 <b>
-                  {new Date(s.starts_at).toLocaleTimeString("en-IN", {
+                  {new Date(s.starts_at).toLocaleString("en-IN", {
+                    day: "numeric",
+                    month: "short",
                     hour: "numeric",
                     minute: "2-digit",
                     timeZone: "Asia/Kolkata",
